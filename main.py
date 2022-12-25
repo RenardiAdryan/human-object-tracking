@@ -2,7 +2,7 @@
 
 import serial
 import time
-
+from vision import *
 ## initialize serial
 SerialObj = None
 try:
@@ -17,8 +17,6 @@ else:
     SerialObj.parity   ='N'    # No parity
     SerialObj.stopbits = 1     # Number of Stop bits = 1
     print('Serial Port Opened')
-
-# time.sleep(3)
 
 
 def send_arm_joint_angle(joint_angle=[]):
@@ -40,15 +38,17 @@ def send_arm_joint_angle(joint_angle=[]):
 
 
 
+while 1:
+    #read vision
+    flag_break,distance = update_vision()
+    print(distance)
+    if flag_break == 1:
+        break
 
 
 
 
-
-
-
-
-
+# time.sleep(3)
 #close the port
 if SerialObj:   
     SerialObj.close()          # Close the port
