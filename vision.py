@@ -2,7 +2,8 @@ from __future__ import print_function
 import cv2 as cv
 import argparse
 import imutils
-
+import numpy as np
+import math
 max_value = 255
 max_value_H = 360//2
 low_H = 24
@@ -118,10 +119,7 @@ while(1):
     ret, frame = cap.read()
     width  = cap.get(cv.CAP_PROP_FRAME_WIDTH)   # float `width`
     height = cap.get(cv.CAP_PROP_FRAME_HEIGHT)  # float `height`
-    print(width,height)
-    # new_h = height / 2
-    # new_w = width / 2
-    # frame = cv.resize(frame, (new_w, new_h))
+   
     if frame is None:
         break
         # return None
@@ -133,9 +131,17 @@ while(1):
     frame_threshold_mask = cv.erode(frame_threshold_mask, None, iterations=threshValue_erode)
     frame_threshold_mask = cv.dilate(frame_threshold_mask, None, iterations=threshValue_dilation)
     
+    frame = cv.line(frame, (int(width/2), 0), (int(width/2), int(height)), (0, 255, 0), 2)
+    frame = cv.line(frame, (0, int(height/2)), (int(width), int(height/2)), (0, 255, 0), 2)
+
     cnts = cv.findContours(frame_threshold_mask.copy(), cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
+
+    point_center_frame = [int(width/2),int(height/2)]
+
     center = None
+    point_center = None
+    point_cnt_real = None
 	# only proceed if at least one contour was found
     if len(cnts) > 0:
 		# find the largest contour in the mask, then use
@@ -147,16 +153,20 @@ while(1):
         dimension = marker[1]
         M = cv.moments(c)
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        
 		# only proceed if the radius meets a minimum size
         if radius > 10:
 			# draw the circle and centroid on the frame,
 			# then update the list of tracked points
             cv.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
             cv.circle(frame, center, 5, (0, 0, 255), -1)
-            cv.putText(frame, str(center), center, cv.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv.LINE_AA)
+            # cv.putText(frame, str(center), center, cv.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv.LINE_AA)
+            point_center = (int(center[0]-point_center_frame[0]),int(((height-center[1])-point_center_frame[1])))
+            cv.putText(frame, str(point_center), center, cv.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv.LINE_AA)
+            
 
     #Distance Calculation
-    if center:
+    if point_center:
         #Uncomment for Calibrations
         # KNOWN_DISTANCE = 30 #cm
         # KNOWN_WIDTH = 10 #cm
@@ -168,9 +178,19 @@ while(1):
         KNOWN_WIDTH = 10 #cm
         
         distance = distance_to_camera(KNOWN_WIDTH, FOCALLENGTH, dimension[0])
-        print(center,dimension)
+
+        #Draw line from the center to the object
+        angle = math.degrees(np.arctan2(point_center[1],point_center[0]))
+
+        x = distance*np.cos(math.radians(angle))
+        y = distance*np.sin(math.radians(angle))
+        point_cnt_real = (x,y)
+
+        # print("SUDUT:",angle)
+        print("REAL POINT: ", x,y)
+       
     else:
-        distance = 0
+        point_cnt_real = None
 
 
     cv.imshow(window_detection_binary_name, frame_threshold_mask)
