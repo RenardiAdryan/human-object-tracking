@@ -43,6 +43,12 @@ def arm_draw(point):
 
 
 #robot input
+
+
+
+
+
+#frame hand
 point_baseframe = [0,0,0]
 point_eof = [4,4,0]
 
@@ -52,7 +58,7 @@ arm_length_3 = 5
 
 angle_1,angle_2,angle_3 = geometric_invers_kinematic(point_eof[0],point_eof[1],point_eof[2],arm_length_1,arm_length_2,arm_length_3)
 
-print(angle_1,angle_2,angle_3)
+print("angle1:",angle_1,"angle2:",angle_2,"angle3:",angle_3)
 
 x_point_1 = point_baseframe[0]
 y_point_1 = point_baseframe[1]
