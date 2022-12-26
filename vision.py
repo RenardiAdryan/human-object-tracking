@@ -13,6 +13,7 @@ high_S = max_value
 high_V = max_value
 window_capture_name = 'Video Capture'
 window_detection_name = 'Object Detection'
+window_detection_binary_name = 'Object Detection Binary'
 low_H_name = 'Low H'
 low_S_name = 'Low S'
 low_V_name = 'Low V'
@@ -78,8 +79,11 @@ parser.add_argument('--camera', help='Camera divide number.', default=0, type=in
 args = parser.parse_args()
 cap = cv.VideoCapture(args.camera)
 
-cv.namedWindow(window_capture_name)
-cv.namedWindow(window_detection_name)
+cv.namedWindow(window_capture_name,cv.WINDOW_NORMAL)
+cv.namedWindow(window_detection_name,cv.WINDOW_NORMAL)
+cv.namedWindow(window_detection_binary_name,cv.WINDOW_NORMAL)
+cv.resizeWindow(window_detection_binary_name,640,480)
+
 
 cv.createTrackbar(low_H_name, window_detection_name , low_H, max_value_H, on_low_H_thresh_trackbar)
 cv.createTrackbar(high_H_name, window_detection_name , high_H, max_value_H, on_high_H_thresh_trackbar)
@@ -105,15 +109,22 @@ cv.setTrackbarPos(iteration_erode_name, window_detection_name, 2)
 cv.setTrackbarPos(iteration_dilate_name, window_detection_name, 2)
 distance=0
 flag_break=0
-def update_vision():
-    global distance
-    global flag_break
-    threshValue_erode = cv.getTrackbarPos(iteration_erode_name, window_detection_name)
-    threshValue_dilation = cv.getTrackbarPos(iteration_dilate_name, window_detection_name)
-
+# def update_vision():
+# global distance
+#     global flag_break
+threshValue_erode = cv.getTrackbarPos(iteration_erode_name, window_detection_name)
+threshValue_dilation = cv.getTrackbarPos(iteration_dilate_name, window_detection_name)
+while(1):
     ret, frame = cap.read()
+    width  = cap.get(cv.CAP_PROP_FRAME_WIDTH)   # float `width`
+    height = cap.get(cv.CAP_PROP_FRAME_HEIGHT)  # float `height`
+    print(width,height)
+    # new_h = height / 2
+    # new_w = width / 2
+    # frame = cv.resize(frame, (new_w, new_h))
     if frame is None:
-        return None
+        break
+        # return None
 
     frame = cv.flip(frame, 1)
     frame_blurred = cv.GaussianBlur(frame, (11, 11), 0)
@@ -162,12 +173,14 @@ def update_vision():
         distance = 0
 
 
+    cv.imshow(window_detection_binary_name, frame_threshold_mask)
     cv.imshow(window_capture_name, frame)
-    cv.imshow(window_detection_name, frame_threshold_mask)
+    
     
     
     key = cv.waitKey(30)
     if key == ord('q') or key == 27:
-        flag_break = 1
+        # flag_break = 1
+        break
 
-    return flag_break,distance
+    # return flag_break,distance
