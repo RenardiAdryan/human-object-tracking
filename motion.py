@@ -1,5 +1,38 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import math
+
+
+
+
+def geometric_invers_kinematic(xref,yref,zref):
+    A1 = 0
+    A2 = 2
+    A3 = 5
+
+    if xref > 0:
+        theta1 = math.degrees(math.atan(yref/xref))
+    else:
+        theta1 = 180 - math.degrees(math.atan(yref/xref))
+    
+    r_1 = math.sqrt(xref*xref + yref*yref)
+    r_2 = zref - A1
+    r_3 = math.sqrt(r_2*r_2 + r_1*r_1)
+
+    psi_1 = math.degrees(math.atan(r_2/r_1))
+    psi_2 = math.degrees(math.acos((A2*A2 + r_3*r_3 + - A3*A3)/( 2 *A2 * r_3 )))
+    theta2 = psi_1+psi_2
+
+    psi_3 = math.degrees(math.acos((A2*A2 + A3*A3 - r_3 * r_3)/( 2 * A2 * A3 )))
+    theta3 = -(180-psi_3)
+    
+    return theta1,theta2,theta3
+
+
+
+
+
+
 
 
 def arm_draw(point):
